@@ -137,8 +137,8 @@ function createAddButtonElement(){
     button.style.left = `${btnLeft}px`
     button.style.top = `${btnTop}px`
     button.style.cursor = 'pointer'
-    button.style.width = '20px'
-    button.style.height = '20px'
+    // button.style.width = '20px'
+    // button.style.height = '20px'
     button.id = 'addButton'
     button.innerText="Add"
     document.querySelector('.canvas-container').appendChild(button)
@@ -158,8 +158,8 @@ function createSubtractButtonElement(){
     button.style.left = `${btnLeft}px`
     button.style.top = `${btnTop}px`
     button.style.cursor = 'pointer'
-    button.style.width = '20px'
-    button.style.height = '20px'
+    // button.style.width = '20px'
+    // button.style.height = '20px'
     button.id = 'subtractButton'
     button.innerText="Subtract"
     document.querySelector('.canvas-container').appendChild(button)
