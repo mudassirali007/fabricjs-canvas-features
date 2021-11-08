@@ -316,7 +316,7 @@ canvas.on('mouse:wheel', function(opt) {
     if (evt.ctrlKey === true) {
         let delta = evt.deltaY;
         $("#zoom-level span").html((canvas.manual_zoom*100).toFixed(0)+"%");
-        if (canvas.manual_zoom > 1) canvas.manual_zoom = 20;
+        if (canvas.manual_zoom > 1) canvas.manual_zoom = 1;
         if (canvas.manual_zoom < 0.01) canvas.manual_zoom = 0.01;
         canvas.manual_zoom *= 0.999 ** delta;
         console.log(new fabric.Point(evt.offsetX,evt.offsetY))
