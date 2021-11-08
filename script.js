@@ -50,6 +50,7 @@ fabric.Canvas.prototype.getItemById = function(name) {
 
 makeArtboard()
 resizeCanvas();
+setZoomElement();
 createAddButtonElement()
 createSubtractButtonElement()
 
@@ -84,6 +85,9 @@ function resizeCanvas() {
     canvas.renderAll();
     // animate(false, currenttime);
     // initLines();
+}
+function setZoomElement(){
+    $("#zoom-level span").html((canvas.manual_zoom*100).toFixed(0)+"%");
 }
 function getFitToScreenZoom(){
   let domEl = document.querySelector('#canvasview');
@@ -315,7 +319,7 @@ canvas.on('mouse:wheel', function(opt) {
 
     if (evt.ctrlKey === true) {
         let delta = evt.deltaY;
-        $("#zoom-level span").html((canvas.manual_zoom*100).toFixed(0)+"%");
+        setZoomElement();
         if (canvas.manual_zoom > 1) canvas.manual_zoom = 1;
         if (canvas.manual_zoom < 0.01) canvas.manual_zoom = 0.01;
         canvas.manual_zoom *= 0.999 ** delta;
