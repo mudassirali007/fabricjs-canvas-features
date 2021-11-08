@@ -6,3 +6,8 @@
 button {
   padding: 10px 20px;
 }
+
+#canvasview{
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 5px, #eaeaea 5px, #eaeaea 10px),
+  repeating-linear-gradient(to right, #f1f1f1, #f1f1f1 5px, #eaeaea 5px, #eaeaea 10px);
+}

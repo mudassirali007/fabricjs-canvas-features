@@ -1,6 +1,6 @@
 const canvas = new fabric.Canvas('canvas', {
     preserveObjectStacking: true,
-    backgroundColor: "#e4e4e4",
+    backgroundColor: "#ffffff",
     stateful: true
 });
 canvas.selection = false;
