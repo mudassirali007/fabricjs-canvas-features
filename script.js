@@ -187,18 +187,6 @@ function buttonPosition(){
 }
 
 
-function addrect(){
-    const rect = new fabric.Rect({
-        width: 300,
-        height: 300,
-        fill: '#000000',
-        rx: 0,
-        ry: 0,
-        objectCaching: false,
-    })
-    centerObject(rect)
-}
-
 function centerObject(object) {
     object.set('left',artboard.width/2+artboard.left-object.width/2);
     object.set('top',artboard.height/2+artboard.top-object.height/2);
@@ -310,7 +298,7 @@ function observeObj(eventName) {
 window.addEventListener('resize', resizeCanvas, false);
 // Zoom in/out of the canvas
 
-/*Button Clicks*/
+/*Start: Button Clicks*/
 $("#grab-canvas").on("click",function(){
 
     if(document.querySelector('#grab-canvas').textContent === 'Grab Canvas' ){
@@ -322,6 +310,18 @@ $("#grab-canvas").on("click",function(){
     }
     canvas.renderAll()
 });
+$("#add-rect").on("click",function(){
+    const rect = new fabric.Rect({
+        width: 300,
+        height: 300,
+        fill: '#000000',
+        rx: 0,
+        ry: 0,
+        objectCaching: false,
+    });
+    centerObject(rect)
+});
+/*End: Button Clicks*/
 
 canvas.on('mouse:wheel', function(opt) {
     let evt = opt.e
