@@ -3,7 +3,7 @@ const canvas = new fabric.Canvas('canvas', {
     backgroundColor: "#ffffff",
     stateful: true
 });
-canvas.selection = false;
+// canvas.selection = false;
 canvas.controlsAboveOverlay = true;
 
 var artboard;
