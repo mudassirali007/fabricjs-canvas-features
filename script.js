@@ -9,6 +9,9 @@ canvas.controlsAboveOverlay = true;
 var artboard;
 var a_width = 5400;
 var a_height = 1080;
+var isDragging = false;
+var lastPosX = 0;
+var lastPosY = 0;
 canvas.canvasWidth = Math.ceil(a_width);
 canvas.canvasHeight = Math.ceil(a_height);
 canvas.manual_zoom = getFitToScreenZoom();
@@ -38,13 +41,6 @@ fabric.Canvas.prototype.getItemById = function(name) {
     }
     return object;
 };
-
-
-
-
-
-
-
 
 // Resize the canvas
 
@@ -190,6 +186,7 @@ function buttonPosition(){
     document.querySelector('#subtractButton').style.top = `${panY}px`
 }
 
+
 function addrect(){
     const rect = new fabric.Rect({
         width: 300,
@@ -231,7 +228,6 @@ function loadFromJson(json) {
 function addSeparator(id) {
     // console.log('addSeparator called :'+id);
 }
-
 function observe(eventName) {
 
     canvas.on(eventName, function(e){
@@ -263,7 +259,7 @@ function observe(eventName) {
     });
 }
 function observeObj(eventName) {
-    console.log('observeObj called event :'+eventName);
+    // console.log('observeObj called event :'+eventName);
     canvas.getObjects().forEach(function(o) {
         o.on(eventName, function(e){
             if(eventName == 'mousemove'){
@@ -314,16 +310,28 @@ function observeObj(eventName) {
 window.addEventListener('resize', resizeCanvas, false);
 // Zoom in/out of the canvas
 
+/*Button Clicks*/
+$("#grab-canvas").on("click",function(){
+
+    if(document.querySelector('#grab-canvas').textContent === 'Grab Canvas' ){
+        canvas.defaultCursor = 'grab';
+        document.querySelector('#grab-canvas').textContent = 'UnGrab Canvas'
+    } else {
+        canvas.defaultCursor = 'default';
+        document.querySelector('#grab-canvas').textContent = 'Grab Canvas'
+    }
+    canvas.renderAll()
+});
+
 canvas.on('mouse:wheel', function(opt) {
     let evt = opt.e
-
     if (evt.ctrlKey === true) {
         let delta = evt.deltaY;
         setZoomElement();
         if (canvas.manual_zoom > 1) canvas.manual_zoom = 1;
         if (canvas.manual_zoom < 0.01) canvas.manual_zoom = 0.01;
-        canvas.manual_zoom *= 0.999 ** delta;
-        console.log(new fabric.Point(evt.offsetX,evt.offsetY))
+        canvas.manual_zoom *= 0.999 ** delta + (delta > 0?-0.25:0.25);
+        // console.log(canvas.manual_zoom,delta)
         setZoomToPoint(new fabric.Point(evt.offsetX,evt.offsetY));
     }else{
         let {deltaX,deltaY} = evt
@@ -343,17 +351,40 @@ canvas.on('mouse:wheel', function(opt) {
 
 // Start panning if space is down or hand tool is enabled
 canvas.on('mouse:down', function(opt) {
+    let evt = opt.e;
+    // if(evt.altKey === true) //to grab by alt button clicked
+    if (this.defaultCursor === 'grab') {
+        this.defaultCursor  = 'grabbing'
+        isDragging = true;
+        this.selection = false;
+        lastPosX = evt.clientX;
+        lastPosY = evt.clientY;
 
+    }
 });
     
 // Pan while dragging mouse
 canvas.on('mouse:move', function(opt) {
-
+    let e = opt.e;
+    if (isDragging) {
+        let vpt = this.viewportTransform;
+        vpt[4] += e.clientX - lastPosX;
+        vpt[5] += e.clientY - lastPosY;
+        this.requestRenderAll();
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+    }
 });
 
 // Stop panning
 canvas.on('mouse:up', function(opt) {
-
+    if(isDragging){
+        this.setViewportTransform(this.viewportTransform);
+        isDragging = false;
+        this.selection = true;
+        this.defaultCursor = 'grab'
+        this.renderAll()
+    }
 });
     
 // Detect mouse over canvas (for dragging objects from the library)
