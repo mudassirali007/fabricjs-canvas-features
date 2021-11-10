@@ -191,14 +191,6 @@ function centerObject(object) {
     object.set('left',artboard.width/2+artboard.left-object.width/2);
     object.set('top',artboard.height/2+artboard.top-object.height/2);
     canvas.add(object).renderAll();
-    observeObj('mousemove')
-    observeObj('mousedown')
-
-    observeObj('drop');
-    observeObj('dragover');
-    observeObj('dragenter');
-    observeObj('dragleave');
-    observeObj('moving');
 }
 function loadFromJson(json) {
     canvas.clear()
@@ -217,32 +209,9 @@ function addSeparator(id) {
     // console.log('addSeparator called :'+id);
 }
 function observe(eventName) {
-
     canvas.on(eventName, function(e){
         // console.log('observe called event :'+eventName);
-        if(eventName == 'object:moving'){
-            let evt = e.e
-            let {offsetX,offsetY} = evt
-            // console.log(offsetX)
-            if( offsetX + 10 > canvas.getWidth()){
-                canvas.relativePan(new fabric.Point(-5,-0))
-            }
-            if(offsetX < 10){
-                canvas.relativePan(new fabric.Point(+5,-0))
-            }
-            if(offsetY + 10 > canvas.getHeight()){
-                canvas.relativePan(new fabric.Point(-0,-5))
-            }
-            if(offsetY < 10){
-                canvas.relativePan(new fabric.Point(-0,+5))
-            }
 
-        }
-        if(eventName == 'mouse:over'){
-            // console.log(e.e.clientX,e.e.offsetX,e.target)
-
-
-        }
 
     });
 }
@@ -250,44 +219,6 @@ function observeObj(eventName) {
     // console.log('observeObj called event :'+eventName);
     canvas.getObjects().forEach(function(o) {
         o.on(eventName, function(e){
-            if(eventName == 'mousemove'){
-                let evt = e.e
-                let obj = e.target
-                let {offsetX,offsetY} = evt
-
-                // if((obj.width/6) + offsetX > canvas.getWidth()){
-                //     canvas.relativePan(new fabric.Point(-10,-0))
-                // }
-                // if((obj.width/6) > offsetX){
-                //     canvas.relativePan(new fabric.Point(+10,-0))
-                // }
-                // if((obj.height/6) + offsetY > canvas.getHeight()){
-                //     canvas.relativePan(new fabric.Point(-0,-10))
-                // }
-                // if((obj.height/6) > offsetY){
-                //     canvas.relativePan(new fabric.Point(-0,+10))
-                // }
-
-            }
-            /* if(eventName == 'mousedown'){
-                 console.log('mousedown')
-             }
-             if(eventName == 'drop'){
-                 console.log('drop')
-             }
-             if(eventName == 'dragover'){
-                 console.log('dragover')
-             }
-             if(eventName == 'dragenter'){
-                 console.log('dragenter')
-             }
-             if(eventName == 'dragleave'){
-                 console.log('dragleave')
-             }
-             if(eventName == 'moving'){
-                 console.log('moving')
-                 console.log(e.transform.target.left)
-             }*/
 
 
         });
@@ -394,6 +325,26 @@ canvas.on('mouse:over', function(e){
 canvas.on('mouse:out', function(e){
 
 });
+
+canvas.on('object:moving', function(e){
+    let evt = e.e
+    let {offsetX,offsetY} = evt
+    // console.log(offsetX,offsetY ,e)
+    if( offsetX + 10 > canvas.getWidth()){
+        canvas.relativePan(new fabric.Point(-10,-0))
+    }
+    if(offsetX < 10){
+        canvas.relativePan(new fabric.Point(+10,-0))
+    }
+    if(offsetY + 10 > canvas.getHeight()){
+        canvas.relativePan(new fabric.Point(-0,-10))
+    }
+    if(offsetY < 10){
+        canvas.relativePan(new fabric.Point(-0,+10))
+    }
+});
+
+
 
 // window.addEventListener("gesturechange", gestureChange, false);
 
