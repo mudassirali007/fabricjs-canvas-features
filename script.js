@@ -203,6 +203,39 @@ function loadFromJson(json) {
     })
 
 }
+function canvasToDataUrl(){
+    let data={
+        width:canvas.canvasWidth*canvas.getZoom(),
+        height:canvas.canvasHeight*canvas.getZoom(),
+        top:canvas.viewportTransform[5],
+        left:canvas.viewportTransform[4]
+    };
+    return canvas.toDataURL(data);
+}
+function dataURItoBlob(dataURI) {
+    let mime = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    let binary = atob(dataURI.split(',')[1]);
+    let array = [];
+    for (let i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+    }
+    return new Blob([new Uint8Array(array)], {type: mime});
+}
+function downloadBlob(blob, filename){
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'download';
+    let clickHandler = () => {
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+            a.removeEventListener('click', clickHandler);
+        }, 150);
+    };
+    a.addEventListener('click', clickHandler, false);
+    a.click();
+    return a;
+}
 
 
 function addSeparator(id) {
@@ -251,6 +284,11 @@ $("#add-rect").on("click",function(){
         objectCaching: false,
     });
     centerObject(rect)
+});
+$("#download").on("click",function(){
+
+    downloadBlob(dataURItoBlob(canvasToDataUrl()), 'mudassirali.com.png');
+
 });
 /*End: Button Clicks*/
 
