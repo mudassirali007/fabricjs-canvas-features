@@ -1,7 +1,19 @@
 const canvas = new fabric.Canvas('canvas', {
     preserveObjectStacking: true,
     backgroundColor: "#ffffff",
-    stateful: true
+    stateful: true,
+
+});
+fabric.Object.prototype.set({
+    transparentCorners: false,
+    cornerColor: "white",
+    cornerStrokeColor: "black",
+    borderColor: "black",
+    cornerSize: 5,
+    padding: 0,
+    cornerStyle: "circle",
+    borderDashArray: [5, 5],
+    borderScaleFactor: 1.3,
 });
 // canvas.selection = false;
 canvas.controlsAboveOverlay = true;
@@ -12,6 +24,8 @@ var a_height = 1080;
 var isDragging = false;
 var lastPosX = 0;
 var lastPosY = 0;
+var activeObject;
+var croppableImage;
 canvas.canvasWidth = Math.ceil(a_width);
 canvas.canvasHeight = Math.ceil(a_height);
 canvas.manual_zoom = getFitToScreenZoom();
@@ -190,7 +204,120 @@ function buttonPosition(){
 function centerObject(object) {
     object.set('left',artboard.width/2+artboard.left-object.width/2);
     object.set('top',artboard.height/2+artboard.top-object.height/2);
-    canvas.add(object).renderAll();
+    canvas.add(object).setActiveObject(object);
+}
+function addImage(src) {
+    fabric.Image.fromURL(src, function (img) {
+            centerObject(img);
+        },
+        { crossOrigin: 'anonymous'}
+    );
+}
+function addSelectionRect() {
+    let selectionRect = new fabric.Rect({
+        name: "croppingRect",
+        fill: "rgba(0,0,0,0.3)",
+        stroke: "black",
+        opacity: 1,
+        left: activeObject.left,
+        top: activeObject.top,
+        width: activeObject.width,
+        height: activeObject.height,
+        scaleX: activeObject.scaleX,
+        scaleY: activeObject.scaleY,
+        hasRotatingPoint: false,
+        transparentCorners: false,
+        hasBorders: false,
+        cornerColor: "white",
+        cornerStrokeColor: "black",
+        borderColor: "black",
+        cornerSize: 5,
+        padding: 0,
+        cornerStyle: "circle",
+        borderDashArray: [5, 5],
+        borderScaleFactor: 1.3,
+    });
+    selectionRect.setControlsVisibility({
+        mt: true,
+        mb: true,
+        ml: true,
+        mr: true,
+        bl: true,
+        br: true,
+        tl: true,
+        tr: true,
+        mtr: false,
+    });
+    selectionRect.scaleToWidth(300);
+    croppableImage = activeObject;
+    canvas.add(selectionRect).setActiveObject(selectionRect);
+}
+function limitRectScaling() {
+
+    activeObject.width = activeObject.width * activeObject.scaleX;
+    activeObject.height = activeObject.height * activeObject.scaleY;
+    activeObject.scaleX = 1;
+    activeObject.scaleY = 1;
+    activeObject.dirty =true;
+
+    activeObject.setCoords();
+
+    if(activeObject.aCoords.tr.x > croppableImage.left+croppableImage.getScaledWidth()){
+        activeObject.set('width',croppableImage.getScaledWidth());
+        activeObject.set('left',croppableImage.left-10);
+    }
+    if(activeObject.aCoords.tl.x < croppableImage.left){
+        activeObject.set('left',croppableImage.left);
+    }
+    if(activeObject.aCoords.tl.y < croppableImage.top){
+        activeObject.set('top',croppableImage.top);
+    }
+    if(activeObject.aCoords.br.y > croppableImage.top+croppableImage.getScaledHeight()){
+        activeObject.set('height',croppableImage.getScaledHeight());
+        activeObject.set('top',croppableImage.top);
+    }
+}
+function limitRectMoving(){
+    let top = activeObject.top;
+    let bottom = top + activeObject.getScaledHeight();
+    let left = activeObject.left;
+    let right = left + activeObject.getScaledWidth();
+
+    // let topBound = croppableImage.getBoundingRect().top;
+    let topBound = croppableImage.top;
+    let bottomBound = topBound +  croppableImage.getScaledHeight();
+    // let leftBound = croppableImage.getBoundingRect().left;
+    let leftBound = croppableImage.left;
+    let rightBound = leftBound +  croppableImage.getScaledWidth();
+
+    activeObject.set('left',Math.min(Math.max(left, leftBound), rightBound - activeObject.getScaledWidth()));
+    activeObject.set('top', Math.min(Math.max(top, topBound), bottomBound - activeObject.getScaledHeight()));
+}
+function croppingImage(){
+
+    let rect = new fabric.Rect({
+        left: activeObject.left,
+        top: activeObject.top,
+        width: activeObject.getScaledWidth(),
+        height: activeObject.getScaledHeight(),
+        absolutePositioned: true,
+    });
+
+    croppableImage.clipPath = rect;
+
+    croppableImage.set({
+        cropX:100,
+        cropY:100,
+        height:activeObject.height,
+        width:activeObject.width,
+        scaleX: activeObject.scaleX,
+        scaleY: activeObject.scaleY,
+    });
+
+
+    canvas.remove(activeObject).setActiveObject(croppableImage).renderAll();
+    croppableImage.setCoords();
+
 }
 function loadFromJson(json) {
     canvas.clear()
@@ -285,6 +412,19 @@ $("#add-rect").on("click",function(){
     });
     centerObject(rect)
 });
+$("#add-random-image").on("click",function(){
+    addImage('https://picsum.photos/800/600');
+});
+$("#add-image").on("click",function(){
+    addImage('/assets/images/beautiful.jpg');
+});
+$("#crop-image").on("click",function(){
+    addSelectionRect();
+    $("#crop-done").show();
+});
+$("#crop-done").on("click",function(){
+    croppingImage();
+});
 $("#download").on("click",function(){
 
     downloadBlob(dataURItoBlob(canvasToDataUrl()), 'mudassirali.com.png');
@@ -365,8 +505,13 @@ canvas.on('mouse:out', function(e){
 });
 
 canvas.on('object:moving', function(e){
-    let evt = e.e
-    let {offsetX,offsetY} = evt
+    activeObject = e.target;
+    if(activeObject.name == 'croppingRect'){
+        limitRectMoving();
+        return;
+    }
+    let evt = e.e;
+    let {offsetX,offsetY} = evt;
     // console.log(offsetX,offsetY ,e)
     if( offsetX + 10 > canvas.getWidth()){
         canvas.relativePan(new fabric.Point(-10,-0))
@@ -380,16 +525,52 @@ canvas.on('object:moving', function(e){
     if(offsetY < 10){
         canvas.relativePan(new fabric.Point(-0,+10))
     }
+
+});
+canvas.on('object:scaling', function(e){
+    activeObject = e.target;
+    if(activeObject.name == 'croppingRect'){
+        limitRectScaling();
+        return;
+    }
 });
 
-
+canvas.on('selection:created', function(e){
+    activeObject = e.target;
+    if(activeObject.type == 'image' || activeObject.name == 'croppingRect'){
+        $("#image-params").show();
+    }
+    $("#canvas-functionality").hide();
+});
+canvas.on('selection:updated', function(e){
+    activeObject = e.target;
+    if(e.deselected && e.deselected[0].name == 'croppingRect'){
+        canvas.remove(e.deselected[0]).renderAll();
+    }
+    if(activeObject.type == 'image' || activeObject.name == 'croppingRect'){
+        $("#image-params").show();
+    } else {
+        $("#image-params").hide();
+        $("#canvas-functionality").show();
+    }
+});
+canvas.on('before:selection:cleared', function(e){
+    activeObject = e.target;
+    if(activeObject.name == 'croppingRect'){
+     canvas.remove(activeObject).renderAll();
+    }
+});
+canvas.on('selection:cleared', function(e){
+    $("#image-params").hide();
+    $("#canvas-functionality").show();
+});
 
 // window.addEventListener("gesturechange", gestureChange, false);
 
 
 
 
-observe('object:modified');
+/*observe('object:modified');
 addSeparator('observing-events-log');
 
 observe('object:moving');
@@ -455,4 +636,4 @@ addSeparator('observing-events-log-obj');
 observeObj('drop');
 observeObj('dragover');
 observeObj('dragenter');
-observeObj('dragleave');
+observeObj('dragleave');*/

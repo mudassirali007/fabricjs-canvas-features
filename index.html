@@ -10,9 +10,18 @@
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<button id="add-rect">Add Rect</button>
-<button id="grab-canvas">Grab Canvas</button>
-<button id="download">Download</button>
+<div id="canvas-functionality">
+  <button id="add-rect">Add Rect</button>
+  <button id="add-random-image">Add Random Image</button>
+  <button id="add-image">Add Image</button>
+  <button id="grab-canvas">Grab Canvas</button>
+  <button id="download">Download</button>
+</div>
+
+<div id="image-params" style="display: none;">
+  <button id="crop-image">Crop Image</button>
+  <button id="crop-done" style="display: none;">Crop Done</button>
+</div>
 <div id="zoom-level">
   <span>100%</span>
 </div>
@@ -28,10 +37,12 @@
 <p class="save">
 </p>
 <!-- partial -->
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.3.1/fabric.min.js" integrity="sha512-ACqMrfAtm537AWzgx/xQ57JnFxXeq8RylQMGg4y/e6M2ew4Z8NycE8aId/Bt2ZE+w1gNsox3MgwxKl7SGMRdtA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="script.js"></script>
+  <script src='/assets/library/jquery-2.1.3.min.js'></script>
+  <script src="/assets/library/fabric-4.6.0.min.js"></script>
+<script type="text/javascript">
+  let cachebuster = Math.round(new Date().getTime() / 1000);
+  document.write('<scr'+'ipt type="text/javascript" src="/assets/script.js?v=' +cachebuster+'"></scr' + 'ipt>');
+</script>
 <footer>
   <p>Author: Mudassir Ali (Full Stack Web Developer)<br>
     Website Link: <a href="https://mudassirali.com" target="_blank">https://mudassirali.com</a><br>
