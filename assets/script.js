@@ -416,7 +416,7 @@ $("#add-random-image").on("click",function(){
     addImage('https://picsum.photos/800/600');
 });
 $("#add-image").on("click",function(){
-    addImage('/assets/images/beautiful.jpg');
+    addImage('assets/images/beautiful.jpg');
 });
 $("#crop-image").on("click",function(){
     addSelectionRect();
