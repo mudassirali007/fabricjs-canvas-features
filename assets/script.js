@@ -546,6 +546,7 @@ canvas.on('selection:updated', function(e){
     activeObject = e.target;
     if(e.deselected && e.deselected[0].name == 'croppingRect'){
         canvas.remove(e.deselected[0]).renderAll();
+        $("#crop-done").hide();
     }
     if(activeObject.type == 'image' || activeObject.name == 'croppingRect'){
         $("#image-params").show();
@@ -558,6 +559,7 @@ canvas.on('before:selection:cleared', function(e){
     activeObject = e.target;
     if(activeObject.name == 'croppingRect'){
      canvas.remove(activeObject).renderAll();
+        $("#crop-done").hide();
     }
 });
 canvas.on('selection:cleared', function(e){
