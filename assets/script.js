@@ -144,6 +144,19 @@ function setAbsolutePan() {
         panY = canvas.height/2 - (canvas.canvasHeight*canvas.manual_zoom)/2;
     canvas.absolutePan(new fabric.Point(-panX,-panY));
 }
+function overlay(){
+    canvas.add(new fabric.Rect({
+        left: artboard.left,
+        top: artboard.top,
+        originX: "left",
+        originY: "top",
+        width: artboard.width,
+        height: artboard.height,
+        fill: "rgba(0,0,0,0.5)",
+        selectable: false,
+        id: "overlay"
+    }));
+}
 
 function createAddButtonElement(){
     let btnLeft = canvas.width/2 + (canvas.canvasWidth*canvas.manual_zoom)/2,
@@ -293,20 +306,6 @@ function cropImage(){
     cropscaley = cropUI.get("scaleY")-0.03;
     overlay();
 }
-
-function overlay(){
-    canvas.add(new fabric.Rect({
-        left: artboard.left,
-        top: artboard.top,
-        originX: "left",
-        originY: "top",
-        width: artboard.width,
-        height: artboard.height,
-        fill: "rgba(0,0,0,0.5)",
-        selectable: false,
-        id: "overlay"
-    }));
-}
 function crop(obj){
     let crop = canvas.getItemById("crop");
     croppableImage.setCoords();
@@ -345,6 +344,26 @@ function crop(obj){
         canvas.uniformScaling = true;
     }
     canvas.renderAll();
+}
+function checkCrop(obj){
+    if (obj.isContainedWithinObject(croppableImage)) {
+        croptop = obj.get("top");
+        cropleft = obj.get("left");
+        cropscalex = obj.get("scaleX");
+        cropscaley = obj.get("scaleY");
+    } else {
+        obj.top = croptop;
+        obj.left = cropleft;
+        obj.scaleX = cropscalex;
+        obj.scaleY = cropscaley;
+        obj.setCoords();
+        obj.saveState();
+    }
+    obj.set({
+        borderColor: '#51B9F9',
+    });
+    canvas.renderAll();
+    crop(canvas.getItemById("cropped"));
 }
 
 function limitRectScaling() {
@@ -574,6 +593,14 @@ canvas.on('mouse:out', function(e){
 
 });
 
+canvas.on('object:modified', function(e){
+    activeObject = e.target;
+    if (activeObject.id == 'crop') {
+        checkCrop(activeObject);
+        return;
+    }
+
+});
 canvas.on('object:moving', function(e){
     activeObject = e.target;
     if (activeObject.id == 'crop') {
