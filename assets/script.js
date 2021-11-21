@@ -338,11 +338,15 @@ function crop(obj){
     }
     canvas.renderAll();
     if (obj.get("id") != "cropped") {
-        canvas.remove(crop);
-        canvas.remove(canvas.getItemById("overlay"));
-        canvas.remove(canvas.getItemById("cropped"));
-        canvas.uniformScaling = true;
+        cancelCrop()
     }
+
+}
+function cancelCrop(){
+    canvas.remove(canvas.getItemById("crop"));
+    canvas.remove(canvas.getItemById("overlay"));
+    canvas.remove(canvas.getItemById("cropped"));
+    canvas.uniformScaling = true;
     canvas.renderAll();
 }
 function checkCrop(obj){
@@ -514,10 +518,11 @@ $("#crop-done").on("click",function(){
         crop(croppableImage);
     }
 });
+$("#crop-cancel").on("click",function(){
+    cancelCrop();
+});
 $("#download").on("click",function(){
-
     downloadBlob(dataURItoBlob(canvasToDataUrl()), 'mudassirali.com.png');
-
 });
 // End: Button Clicks
 
@@ -651,11 +656,13 @@ canvas.on('selection:created', function(e){
     if(activeObject.type == 'image'){
         $("#image-params").show();
         $("#crop-done").hide();
+        $("#crop-cancel").hide();
         $("#crop-image").show();
     }
     if(activeObject.id == 'crop'){
         $("#image-params").show();
         $("#crop-done").show();
+        $("#crop-cancel").show();
         $("#crop-image").hide();
     }
     $("#canvas-functionality").hide();
@@ -665,16 +672,19 @@ canvas.on('selection:updated', function(e){
     if(e.deselected && e.deselected[0].id == 'crop'){
         canvas.remove(e.deselected[0]).renderAll();
         $("#crop-done").hide();
+        $("#crop-cancel").hide();
         $("#crop-image").show();
     }
     if(activeObject.type == 'image'){
         $("#image-params").show();
         $("#crop-done").hide();
+        $("#crop-cancel").hide();
         $("#crop-image").show();
     }
     if(activeObject.id == 'crop'){
         $("#image-params").show();
         $("#crop-done").show();
+        $("#crop-cancel").show();
         $("#crop-image").hide();
     }
 });
@@ -683,6 +693,7 @@ canvas.on('before:selection:cleared', function(e){
     // if(activeObject.id == 'crop'){
     //  canvas.remove(activeObject).renderAll();
     //     $("#crop-done").hide();
+    //     $("#crop-cancel").hide();
     //     $("#crop-image").show();
     //     crop(activeObject);
     // }
