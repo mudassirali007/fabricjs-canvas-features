@@ -26,6 +26,11 @@ var lastPosX = 0;
 var lastPosY = 0;
 var activeObject;
 var croppableImage;
+var cropleft;
+var croptop;
+var cropscalex;
+var cropscaley;
+
 canvas.canvasWidth = Math.ceil(a_width);
 canvas.canvasHeight = Math.ceil(a_height);
 canvas.manual_zoom = getFitToScreenZoom();
@@ -58,7 +63,7 @@ fabric.Canvas.prototype.getItemById = function(name) {
 
 // Resize the canvas
 
-makeArtboard()
+makeArtboard();
 resizeCanvas();
 setZoomElement();
 createAddButtonElement()
@@ -208,36 +213,69 @@ function centerObject(object) {
 }
 function addImage(src) {
     fabric.Image.fromURL(src, function (img) {
+        img.set({
+            originX: "center",
+            originY: "center",
+            scaleX: parseFloat(img.get("scaleX").toFixed(2)),
+            scaleY: parseFloat(img.get("scaleY").toFixed(2)),
+            ogWidth: img.get("width"),
+            ogHeight: img.get("height")
+        });
             centerObject(img);
         },
         { crossOrigin: 'anonymous'}
     );
 }
-function addSelectionRect() {
-    let selectionRect = new fabric.Rect({
-        name: "croppingRect",
-        fill: "rgba(0,0,0,0.3)",
-        stroke: "black",
-        opacity: 1,
-        left: activeObject.left,
-        top: activeObject.top,
-        width: activeObject.width,
-        height: activeObject.height,
-        scaleX: activeObject.scaleX,
-        scaleY: activeObject.scaleY,
-        hasRotatingPoint: false,
-        transparentCorners: false,
-        hasBorders: false,
-        cornerColor: "white",
-        cornerStrokeColor: "black",
-        borderColor: "black",
-        cornerSize: 5,
-        padding: 0,
-        cornerStyle: "circle",
-        borderDashArray: [5, 5],
-        borderScaleFactor: 1.3,
+
+function cropImage(){
+    croppableImage = activeObject;
+    canvas.uniformScaling = false;
+    activeObject.setCoords();
+    let left = activeObject.get("left")-((activeObject.get("width")*activeObject.get("scaleX"))/2);
+    let top = activeObject.get("top")-((activeObject.get("height")*activeObject.get("scaleY"))/2);
+    let cropx = activeObject.get("cropX");
+    let cropy = activeObject.get("cropY");
+    let cropUI = new fabric.Rect({
+        left: activeObject.get("left"),
+        top: activeObject.get("top"),
+        width: (activeObject.get("width")*activeObject.get("scaleX"))-5,
+        height: (activeObject.get("height")*activeObject.get("scaleY"))-5,
+        originX: "center",
+        originY: "center",
+        id: "crop",
+        fill: "rgba(0,0,0,0)",
+        shadow: {
+            color: "black",
+            offsetX: 0,
+            offsetY: 0,
+            blur: 0,
+            opacity: 0
+        }
+    })
+    activeObject.clone(function(cloned) {
+        cloned.set({
+            id: "cropped",
+            selectable: false,
+            originX: "center",
+            originY: "center"
+        })
+        canvas.add(cloned);
+        canvas.bringToFront(cloned);
+        canvas.bringToFront(cropUI);
+        canvas.renderAll();
     });
-    selectionRect.setControlsVisibility({
+    activeObject.set({
+        cropX: 0,
+        cropY: 0,
+        width: activeObject.get("ogWidth"),
+        height: activeObject.get("ogHeight")
+    }).setCoords();
+    canvas.renderAll();
+    activeObject.set({
+        left: left+((activeObject.get("width")*activeObject.get("scaleX"))/2)-(cropx*activeObject.get("scaleX")),
+        top: top+((activeObject.get("height")*activeObject.get("scaleY"))/2)-(cropy*activeObject.get("scaleY"))
+    })
+    cropUI.setControlsVisibility({
         mt: true,
         mb: true,
         ml: true,
@@ -247,11 +285,68 @@ function addSelectionRect() {
         tl: true,
         tr: true,
         mtr: false,
-    });
-    selectionRect.scaleToWidth(300);
-    croppableImage = activeObject;
-    canvas.add(selectionRect).setActiveObject(selectionRect);
+    })
+    canvas.add(cropUI).setActiveObject(cropUI).renderAll();
+    cropleft = cropUI.get("left");
+    croptop = cropUI.get("top");
+    cropscalex = cropUI.get("scaleX")-0.03;
+    cropscaley = cropUI.get("scaleY")-0.03;
+    overlay();
 }
+
+function overlay(){
+    canvas.add(new fabric.Rect({
+        left: artboard.left,
+        top: artboard.top,
+        originX: "left",
+        originY: "top",
+        width: artboard.width,
+        height: artboard.height,
+        fill: "rgba(0,0,0,0.5)",
+        selectable: false,
+        id: "overlay"
+    }));
+}
+function crop(obj){
+    let crop = canvas.getItemById("crop");
+    croppableImage.setCoords();
+    crop.setCoords();
+    let cleft = crop.get("left")-((crop.get("width")*crop.get("scaleX"))/2);
+    let ctop = crop.get("top")-((crop.get("height")*crop.get("scaleY"))/2);
+    let height = (crop.get("height")/croppableImage.get("scaleY"))*crop.get("scaleY");
+    let width = (crop.get("width")/croppableImage.get("scaleX"))*crop.get("scaleX");
+    let left = cleft-(croppableImage.get("left")-((croppableImage.get("width")*croppableImage.get("scaleX"))/2));
+    let top = ctop-(croppableImage.get("top")-((croppableImage.get("height")*croppableImage.get("scaleY"))/2));
+    if (left < 0 && top > 0) {
+        obj.set({cropY:top/croppableImage.get("scaleY"),height:height}).setCoords();
+        canvas.renderAll();
+        obj.set({
+            top: ctop+((obj.get("height")*obj.get("scaleY"))/2)
+        })
+    } else if (top < 0 && left > 0) {
+        obj.set({cropX:left/croppableImage.get("scaleX"),width:width}).setCoords();
+        canvas.renderAll();
+        obj.set({
+            left: cleft+((obj.get("width")*obj.get("scaleX"))/2)
+        })
+    } else if (top > 0 && left > 0) {
+        obj.set({cropX:left/croppableImage.get("scaleX"),cropY:top/croppableImage.get("scaleY"),height:height,width:width}).setCoords();
+        canvas.renderAll();
+        obj.set({
+            left: cleft+((obj.get("width")*obj.get("scaleX"))/2),
+            top: ctop+((obj.get("height")*obj.get("scaleY"))/2)
+        })
+    }
+    canvas.renderAll();
+    if (obj.get("id") != "cropped") {
+        canvas.remove(crop);
+        canvas.remove(canvas.getItemById("overlay"));
+        canvas.remove(canvas.getItemById("cropped"));
+        canvas.uniformScaling = true;
+    }
+    canvas.renderAll();
+}
+
 function limitRectScaling() {
 
     activeObject.width = activeObject.width * activeObject.scaleX;
@@ -292,32 +387,6 @@ function limitRectMoving(){
 
     activeObject.set('left',Math.min(Math.max(left, leftBound), rightBound - activeObject.getScaledWidth()));
     activeObject.set('top', Math.min(Math.max(top, topBound), bottomBound - activeObject.getScaledHeight()));
-}
-function croppingImage(){
-
-    let rect = new fabric.Rect({
-        left: activeObject.left,
-        top: activeObject.top,
-        width: activeObject.getScaledWidth(),
-        height: activeObject.getScaledHeight(),
-        absolutePositioned: true,
-    });
-
-    croppableImage.clipPath = rect;
-
-    croppableImage.set({
-        cropX:100,
-        cropY:100,
-        height:activeObject.height,
-        width:activeObject.width,
-        scaleX: activeObject.scaleX,
-        scaleY: activeObject.scaleY,
-    });
-
-
-    canvas.remove(activeObject).setActiveObject(croppableImage).renderAll();
-    croppableImage.setCoords();
-
 }
 function loadFromJson(json) {
     canvas.clear()
@@ -389,7 +458,7 @@ function observeObj(eventName) {
 window.addEventListener('resize', resizeCanvas, false);
 // Zoom in/out of the canvas
 
-/*Start: Button Clicks*/
+// Start: Button Clicks
 $("#grab-canvas").on("click",function(){
 
     if(document.querySelector('#grab-canvas').textContent === 'Grab Canvas' ){
@@ -419,17 +488,19 @@ $("#add-image").on("click",function(){
     addImage('assets/images/beautiful.jpg');
 });
 $("#crop-image").on("click",function(){
-    addSelectionRect();
+    cropImage();
 });
 $("#crop-done").on("click",function(){
-    croppingImage();
+    if(activeObject && activeObject.id == 'crop'){
+        crop(croppableImage);
+    }
 });
 $("#download").on("click",function(){
 
     downloadBlob(dataURItoBlob(canvasToDataUrl()), 'mudassirali.com.png');
 
 });
-/*End: Button Clicks*/
+// End: Button Clicks
 
 canvas.on('mouse:wheel', function(opt) {
     let evt = opt.e
@@ -505,8 +576,15 @@ canvas.on('mouse:out', function(e){
 
 canvas.on('object:moving', function(e){
     activeObject = e.target;
-    if(activeObject.name == 'croppingRect'){
-        limitRectMoving();
+    if (activeObject.id == 'crop') {
+        // limitRectMoving();
+        if (activeObject.isContainedWithinObject(croppableImage)) {
+            cropleft = activeObject.get("left");
+            croptop = activeObject.get("top");
+            cropscalex = activeObject.get("scaleX");
+            cropscaley = activeObject.get("scaleY");
+        }
+        crop(canvas.getItemById("cropped"));
         return;
     }
     let evt = e.e;
@@ -528,18 +606,28 @@ canvas.on('object:moving', function(e){
 });
 canvas.on('object:scaling', function(e){
     activeObject = e.target;
-    if(activeObject.name == 'croppingRect'){
-        limitRectScaling();
+    if (activeObject.id == 'crop') {
+        // limitRectScaling();
+        if (activeObject.isContainedWithinObject(croppableImage)) {
+            cropleft = activeObject.get("left");
+            croptop = activeObject.get("top");
+            cropscalex = activeObject.get("scaleX");
+            cropscaley = activeObject.get("scaleY");
+        }
+        crop(canvas.getItemById("cropped"));
         return;
     }
 });
 
 canvas.on('selection:created', function(e){
     activeObject = e.target;
-    if(activeObject.type == 'image' || activeObject.name == 'croppingRect'){
+    if(activeObject.type == 'image'){
         $("#image-params").show();
+        $("#crop-done").hide();
+        $("#crop-image").show();
     }
-    if(activeObject.name == 'croppingRect'){
+    if(activeObject.id == 'crop'){
+        $("#image-params").show();
         $("#crop-done").show();
         $("#crop-image").hide();
     }
@@ -547,32 +635,41 @@ canvas.on('selection:created', function(e){
 });
 canvas.on('selection:updated', function(e){
     activeObject = e.target;
-    if(e.deselected && e.deselected[0].name == 'croppingRect'){
+    if(e.deselected && e.deselected[0].id == 'crop'){
         canvas.remove(e.deselected[0]).renderAll();
         $("#crop-done").hide();
         $("#crop-image").show();
     }
-    if(activeObject.type == 'image' || activeObject.name == 'croppingRect'){
+    if(activeObject.type == 'image'){
         $("#image-params").show();
+        $("#crop-done").hide();
+        $("#crop-image").show();
     }
-    if(activeObject.name == 'croppingRect'){
+    if(activeObject.id == 'crop'){
+        $("#image-params").show();
         $("#crop-done").show();
         $("#crop-image").hide();
     }
 });
 canvas.on('before:selection:cleared', function(e){
-    activeObject = e.target;
-    if(activeObject.name == 'croppingRect'){
-     canvas.remove(activeObject).renderAll();
-        $("#crop-done").hide();
-        $("#crop-image").show();
-    }
-    $("#image-params").hide();
-    $("#canvas-functionality").show();
+    // activeObject = e.target;
+    // if(activeObject.id == 'crop'){
+    //  canvas.remove(activeObject).renderAll();
+    //     $("#crop-done").hide();
+    //     $("#crop-image").show();
+    //     crop(activeObject);
+    // }
+    // $("#image-params").hide();
+    // $("#canvas-functionality").show();
 });
 canvas.on('selection:cleared', function(e){
+    activeObject = e.target;
     $("#image-params").hide();
     $("#canvas-functionality").show();
+    if(e.deselected && e.deselected[0].id == 'crop'){
+        crop(croppableImage);
+    }
+
 });
 
 // window.addEventListener("gesturechange", gestureChange, false);
