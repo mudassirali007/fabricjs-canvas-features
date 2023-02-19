@@ -1,58 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>Fabric.js Feature - https://mudassirali.com</title>
-  <meta name="description" content="Fabric.js feature designed by Mudassir Ali - Web Developer in Laravel PHP JS Vue.js React.js- https://mudassirali.com">
-  <meta name="robots" content="index, follow" />
-  <meta name="viewport" content="width=device-width">
-  <link rel="canonical" href="https://mudassirali.com/" />
-  <link rel="stylesheet" href="./style.css">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fabric.js Feature - https://mudassirali.com</title>
+    <meta
+      name="description"
+      content="Fabric.js feature designed by Mudassir Ali - Web Developer in Laravel PHP JS Vue.js React.js- https://mudassirali.com"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="canonical" href="https://mudassirali.com/" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- partial:index.partial.html -->
+    <div id="canvas-functionality">
+      <button id="add-rect">Add Rect</button>
+      <button id="add-random-image">Add Random Image</button>
+      <button id="add-image">Add Image</button>
+      <button id="add-bg-randow-image">Add BG Random Image</button>
+      <button id="grab-canvas">Grab Canvas</button>
+      <button id="download">Download</button>
+    </div>
 
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<div id="canvas-functionality">
-  <button id="add-rect">Add Rect</button>
-  <button id="add-random-image">Add Random Image</button>
-  <button id="add-image">Add Image</button>
-  <button id="grab-canvas">Grab Canvas</button>
-  <button id="download">Download</button>
-</div>
+    <div id="image-params" style="display: none">
+      <button id="crop-image">Crop Image</button>
+      <button id="crop-done" style="display: none">Crop Done</button>
+      <button id="crop-cancel" style="display: none">Crop Cancel</button>
+    </div>
+    <div id="zoom-level">
+      <span>100%</span>
+    </div>
+    <!-- <br>  -->
+    <div id="canvasview" style="width: 100vw; height: 100vh">
+      <canvas id="canvas"></canvas>
+    </div>
 
-<div id="image-params" style="display: none;">
-  <button id="crop-image">Crop Image</button>
-  <button id="crop-done" style="display: none;">Crop Done</button>
-  <button id="crop-cancel" style="display: none;">Crop Cancel</button>
-</div>
-<div id="zoom-level">
-  <span>100%</span>
-</div>
-<!-- <br>  -->
-<div id="canvasview"
-     style="width: 100vw;height:100vh"
->
-
-  <canvas id="canvas"></canvas>
-</div>
-
-<br>  
-<p class="save">
-</p>
-<!-- partial -->
-  <script src='assets/library/jquery-2.1.3.min.js'></script>
-  <script src="assets/library/fabric-4.6.0.min.js"></script>
-  <script src="assets/script.js"></script>
-<!--<script type="text/javascript">-->
-<!--  let cachebuster = Math.round(new Date().getTime() / 1000);-->
-<!--  document.write('<scr'+'ipt type="text/javascript" src="assets/script.js?v=' +cachebuster+'"></scr' + 'ipt>');-->
-<!--</script>-->
-<footer>
-  <p>Author: Mudassir Ali (Full Stack Web Developer)<br>
-    Website Link: <a href="https://mudassirali.com" target="_blank">https://mudassirali.com</a><br>
-    Email: <a href="mailto:mudassiraliansari@gmail.com">mudassiraliansari@gmail.com</a>
-  </p>
-  <p class="copyright">Blue Dot © 2021</p>
-</footer>
-</body>
+    <br />
+    <p class="save"></p>
+    <!-- partial -->
+    <script src="assets/library/jquery-2.1.3.min.js"></script>
+    <script src="assets/library/fabric-4.6.0.min.js"></script>
+    <script src="assets/script.js"></script>
+    <!--<script type="text/javascript">-->
+    <!--  let cachebuster = Math.round(new Date().getTime() / 1000);-->
+    <!--  document.write('<scr'+'ipt type="text/javascript" src="assets/script.js?v=' +cachebuster+'"></scr' + 'ipt>');-->
+    <!--</script>-->
+    <footer>
+      <p>
+        Author: Mudassir Ali (Full Stack Web Developer)<br />
+        Website Link:
+        <a href="https://mudassirali.com" target="_blank"
+          >https://mudassirali.com</a
+        ><br />
+        Email:
+        <a href="mailto:mudassiraliansari@gmail.com"
+          >mudassiraliansari@gmail.com</a
+        >
+      </p>
+      <p class="copyright">Blue Dot © 2021</p>
+    </footer>
+  </body>
 </html>
